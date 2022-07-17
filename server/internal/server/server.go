@@ -16,9 +16,7 @@ func New(ctx context.Context, host, port string, rdb *redis.Client) error {
 	handlers := api.NewHandlers(ctx, rdb)
 	app := fiber.New(config)
 	app.Post("/shorten", handlers.ShortUrl)
-	app.Get("/long", func(c *fiber.Ctx) error {
-		return c.SendString("long")
-	})
+	app.Get("/long", handlers.LongUrl)
 
 	err := app.Listen(host + ":" + port)
 	if err != nil {

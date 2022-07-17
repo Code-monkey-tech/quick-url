@@ -3,6 +3,3 @@
 
 # JetBrains files
 .idea
-
-# All other files
-node_modules
