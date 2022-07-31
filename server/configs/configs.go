@@ -9,7 +9,6 @@ type AppConfig struct {
 	RedisURI      string
 	PostgresURL   string
 	RedisPassword string
-	ServerHost    string
 	ServerPort    string
 }
 
@@ -18,7 +17,6 @@ func ReadConfig() *AppConfig {
 		RedisURI:      mustEnv("rdb-uri"),
 		PostgresURL:   mustEnv("pgdb-url"),
 		RedisPassword: mustEnv("rdb-password"),
-		ServerHost:    mustEnv("host"),
 		ServerPort:    mustEnv("port"),
 	}
 	return conf

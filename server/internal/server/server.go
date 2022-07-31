@@ -8,7 +8,7 @@ import (
 	"quick-url/server/api"
 )
 
-func New(ctx context.Context, host, port string, pgdb *pgx.Conn, rdb *redis.Client) error {
+func New(ctx context.Context, port string, pgdb *pgx.Conn, rdb *redis.Client) error {
 	config := fiber.Config{
 		Prefork:      false,
 		ServerHeader: "quick-url-server",
@@ -19,7 +19,7 @@ func New(ctx context.Context, host, port string, pgdb *pgx.Conn, rdb *redis.Clie
 	app.Post("/shorten", handlers.ShortUrl)
 	app.Get("/long", handlers.LongUrl)
 
-	err := app.Listen(host + ":" + port)
+	err := app.Listen(":" + port)
 	if err != nil {
 		return err
 	}

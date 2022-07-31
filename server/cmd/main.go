@@ -37,7 +37,7 @@ func main() {
 		}
 	})
 
-	err = server.New(ctx, config.ServerHost, config.ServerPort, pgdb, rdb)
+	err = server.New(ctx, config.ServerPort, pgdb, rdb)
 	if err != nil {
 		log.Fatal().Err(err).Str("server", "failed").Msg("start new server failed")
 	}
