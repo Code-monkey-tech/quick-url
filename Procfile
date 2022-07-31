@@ -1,2 +1,2 @@
-// +heroku install .server/cmd/..
+// +heroku install ./server/cmd/..
 web: bin/shrty
