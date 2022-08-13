@@ -18,13 +18,8 @@ func main() {
 		Logger()
 	config := configs.ReadConfig()
 
-	pgdb := pg.New(ctx, config.PostgresURL)
-	closer.Bind(func() {
-		err := pgdb.Close(ctx)
-		if err != nil {
-			log.Error().Err(err).Str("postgres", "close").Msg("postgres close connection failed")
-		}
-	})
+	pgp := pg.New(ctx, config.PostgresURL)
+	closer.Bind(pgp.Close)
 
 	rdb, err := redis.New(ctx, config.RedisURI, config.RedisPassword)
 	if err != nil {
@@ -37,7 +32,7 @@ func main() {
 		}
 	})
 
-	err = server.New(ctx, config.ServerPort, pgdb, rdb)
+	err = server.New(ctx, config.ServerPort, pgp, rdb)
 	if err != nil {
 		log.Fatal().Err(err).Str("server", "failed").Msg("start new server failed")
 	}
