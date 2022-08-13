@@ -5,14 +5,14 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v4"
-	"quick-url/server/api"
+	"shrty/api"
 )
 
 func New(ctx context.Context, port string, pgdb *pgx.Conn, rdb *redis.Client) error {
 	config := fiber.Config{
 		Prefork:      false,
-		ServerHeader: "quick-url-server",
-		AppName:      "quick-url",
+		ServerHeader: "shrty-server",
+		AppName:      "shrty",
 	}
 	handlers := api.NewHandlers(ctx, pgdb, rdb)
 	app := fiber.New(config)

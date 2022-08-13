@@ -5,10 +5,10 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/xlab/closer"
 	"os"
-	"quick-url/server/configs"
-	"quick-url/server/internal/server"
-	"quick-url/server/internal/storage/pg"
-	"quick-url/server/internal/storage/redis"
+	"shrty/configs"
+	"shrty/internal/server"
+	"shrty/internal/storage/pg"
+	"shrty/internal/storage/redis"
 )
 
 func main() {
