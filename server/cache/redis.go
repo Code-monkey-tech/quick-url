@@ -10,7 +10,7 @@ type Cache struct {
 	rdb *redis.Client
 }
 
-func NewCache(rdb *redis.Client) Сaches {
+func NewCache(rdb *redis.Client) Сacher {
 	return &Cache{rdb: rdb}
 }
 

@@ -1,4 +1,4 @@
-package api
+package handlers
 
 import (
 	"context"
@@ -8,15 +8,10 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jxskiss/base62"
 	"net/url"
-	"shrty/provider/cache"
+	"shrty/cache"
 	"strconv"
 	"time"
 )
-
-type Encoder interface {
-	Encode(number uint64) string
-	Decode(encoded string) (uint64, error)
-}
 
 type Handlers struct {
 	pgp *pgxpool.Pool
@@ -47,9 +42,16 @@ type LongUrlResponse struct {
 const (
 	// cacheTtl default values ttl
 	cacheTtl = time.Minute * 5
-	// defaultExpireDate expire url
+	// defaultExpireDate expire url, for future expiration
 	defaultExpireDate = time.Hour * 24 * 30 // one month
 )
+
+// HealthCheck ...
+func (h *Handlers) HealthCheck(fc *fiber.Ctx) error {
+	return fc.JSON(struct {
+		Status string
+	}{Status: "live"})
+}
 
 // Shorter create short url from long address
 func (h *Handlers) Shorter(fc *fiber.Ctx) error {
@@ -72,13 +74,15 @@ func (h *Handlers) Shorter(fc *fiber.Ctx) error {
 	}
 
 	newID := new(uint64)
-	if err = h.pgp.QueryRow(fc.Context(), `select nextval(pg_get_serial_sequence('url','id'))`).Scan(newID); err != nil {
+	if err = h.pgp.QueryRow(fc.Context(),
+		`select nextval(pg_get_serial_sequence('url','id'))`).Scan(newID); err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 	var bs62 = base62.Encode([]byte(strconv.FormatUint(*newID, 10)))
 
-	_, err = h.pgp.Exec(fc.Context(), "insert into public.url (short_url, long_url, insert_date, expire_date) "+
-		"values ($1, $2, $3, $4)", string(bs62), uri.String(), time.Now(), time.Now().Add(defaultExpireDate))
+	_, err = h.pgp.Exec(fc.Context(),
+		"insert into public.url (short_url, long_url, insert_date, expire_date) "+
+			"values ($1, $2, $3, $4)", string(bs62), uri.String(), time.Now(), time.Now().Add(defaultExpireDate))
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -107,7 +111,8 @@ func (h *Handlers) Longer(fc *fiber.Ctx) error {
 
 	longUrl := new(string)
 	err = h.pgp.QueryRow(fc.Context(),
-		"select long_url from public.url where short_url ilike $1", sur.ShortUrl).Scan(longUrl)
+		"select long_url from public.url where short_url ilike $1",
+		sur.ShortUrl).Scan(longUrl)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else if *longUrl == "" {

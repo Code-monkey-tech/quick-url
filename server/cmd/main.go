@@ -17,7 +17,6 @@ func main() {
 		Timestamp().
 		Logger()
 	config := configs.ReadConfig()
-
 	pgp := pg.New(ctx, config.PostgresURL)
 	closer.Bind(pgp.Close)
 
