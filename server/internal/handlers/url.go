@@ -4,22 +4,22 @@ import (
 	"context"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jxskiss/base62"
 	"net/url"
 	"shrty/cache"
+	"shrty/internal/storage/pg/query"
 	"strconv"
 	"time"
 )
 
 type Handlers struct {
-	pgp   *pgxpool.Pool
+	query query.Query
 	cache cache.Сacher
 	ctx   context.Context
 }
 
-func NewHandlers(ctx context.Context, pgp *pgxpool.Pool, cache cache.Сacher) *Handlers {
-	return &Handlers{pgp: pgp, cache: cache, ctx: ctx}
+func NewHandlers(ctx context.Context, query query.Query, cache cache.Сacher) *Handlers {
+	return &Handlers{query: query, cache: cache, ctx: ctx}
 }
 
 type ShortUrlRequest struct {
@@ -71,16 +71,15 @@ func (h *Handlers) ShortenUrl(fc *fiber.Ctx) error {
 		return fc.JSON(ShortUrlResponse{ShortUrl: get})
 	}
 
-	newID := new(uint64)
-	if err = h.pgp.QueryRow(fc.Context(),
-		`select nextval(pg_get_serial_sequence('url','id'))`).Scan(newID); err != nil {
+	newID, err := h.query.NextVal(fc.Context())
+	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
+
 	var bs62 = base62.Encode([]byte(strconv.FormatUint(*newID, 10)))
 
-	_, err = h.pgp.Exec(fc.Context(),
-		"insert into public.url (short_url, long_url, insert_date, expire_date) "+
-			"values ($1, $2, $3, $4)", string(bs62), uri.String(), time.Now(), time.Now().Add(defaultExpireDate))
+	err = h.query.ShortenUrl(
+		fc.Context(), string(bs62), uri.String(), time.Now(), time.Now().Add(defaultExpireDate))
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -106,10 +105,7 @@ func (h *Handlers) ExpandUrl(fc *fiber.Ctx) error {
 		return fc.JSON(ShortUrlResponse{ShortUrl: get})
 	}
 
-	longUrl := new(string)
-	err = h.pgp.QueryRow(fc.Context(),
-		"select long_url from public.url where short_url ilike $1",
-		sur.Hash).Scan(longUrl)
+	longUrl, err := h.query.GetLongUrl(fc.Context(), sur.Hash)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else if *longUrl == "" {

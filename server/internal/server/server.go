@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"shrty/cache"
 	"shrty/internal/handlers"
+	"shrty/internal/storage/pg/query"
 )
 
 const (
@@ -21,8 +23,12 @@ func New(ctx context.Context, port string, pgdb *pgxpool.Pool, rdb *redis.Client
 		ServerHeader: "shrty-server",
 		AppName:      "shrty",
 	}
-	handle := handlers.NewHandlers(ctx, pgdb, cache.NewCache(rdb))
+	handle := handlers.NewHandlers(ctx, query.NewQuery(pgdb), cache.NewCache(rdb))
 	app := fiber.New(config)
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:8080, http://localhost:8080/,",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 	app.Post(shortenUrlPath, handle.ShortenUrl)
 	app.Get(expandUrlPath, handle.ExpandUrl)
 	app.Get(liveUrlPath, handle.HealthCheck)

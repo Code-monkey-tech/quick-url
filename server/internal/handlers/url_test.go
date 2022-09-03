@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang/mock/gomock"
 	"io"
 	"log"
 	"net/http"
@@ -16,6 +17,9 @@ func TestHandlers_Shorter(t *testing.T) {
 	handlers := Handlers{}
 	app := fiber.New()
 	app.Post("/shorten", handlers.ShortenUrl)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	buf := bytes.Buffer{}
 	err := json.NewEncoder(&buf).
