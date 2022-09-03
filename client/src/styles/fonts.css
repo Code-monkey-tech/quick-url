@@ -1,0 +1,20 @@
+@font-face {
+    font-family: 'Comfortaa';
+    src: url(../assets/Comfortaa-Bold.woff) format('woff'),
+         url(../assets/Comfortaa-Bold.ttf) format('ttf');
+    font-weight: 700;
+  }
+
+@font-face {
+    font-family: 'Comfortaa';
+    src: url(../assets/Comfortaa-Medium.woff) format('woff'), 
+        url(../assets/Comfortaa-Medium.ttf) format('ttf');
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: 'Comfortaa';
+    src: url(../assets/Comfortaa-Regular.woff) format('woff'), 
+        url(../assets/Comfortaa-Regular.ttf) format('ttf');
+    font-weight: 400;
+}

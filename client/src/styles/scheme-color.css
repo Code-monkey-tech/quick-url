@@ -1,0 +1,24 @@
+:root{
+    --back-color: #fff;
+    --btn-secondary: #66BFBF;
+    --btn-primary: #E60058;
+    --btn-text-color: #FCFCFC;
+               /* checkbox*/
+    --background-color-primary: #ebebeb;
+    --background-color-secondary: #fafafa;
+    --accent-color: #cacaca;
+    --text-primary-color: #222;
+    --element-size: 4rem;
+}
+
+:root.dark{
+    --back-color: #15334F;
+    --btn-secondary: #6EE0E0;
+    --btn-primary: #E60058;
+    --btn-text-color: #15334F;
+               /* checkbox*/
+    --background-color-primary: #1e1e1e;
+    --background-color-secondary: #2d2d30;
+    --accent-color: #3f3f3f;
+    --text-primary-color: #ddd;
+}
