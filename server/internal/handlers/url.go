@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jxskiss/base62"
@@ -14,13 +13,13 @@ import (
 )
 
 type Handlers struct {
-	pgp *pgxpool.Pool
-	rdb *redis.Client
-	ctx context.Context
+	pgp   *pgxpool.Pool
+	cache cache.Сacher
+	ctx   context.Context
 }
 
-func NewHandlers(ctx context.Context, pgp *pgxpool.Pool, rdb *redis.Client) *Handlers {
-	return &Handlers{pgp: pgp, rdb: rdb, ctx: ctx}
+func NewHandlers(ctx context.Context, pgp *pgxpool.Pool, cache cache.Сacher) *Handlers {
+	return &Handlers{pgp: pgp, cache: cache, ctx: ctx}
 }
 
 type ShortUrlRequest struct {
@@ -31,12 +30,12 @@ type ShortUrlResponse struct {
 	ShortUrl string `json:"url"`
 }
 
-type LongUrlRequest struct {
-	ShortUrl string `json:"long"`
+type ExpandUrlRequest struct {
+	Hash string `json:"hash"`
 }
 
-type LongUrlResponse struct {
-	LongUrl string `json:"long"`
+type ExpandUrlResponse struct {
+	LongUrl string `json:"url"`
 }
 
 const (
@@ -53,8 +52,8 @@ func (h *Handlers) HealthCheck(fc *fiber.Ctx) error {
 	}{Status: "live"})
 }
 
-// Shorter create short url from long address
-func (h *Handlers) Shorter(fc *fiber.Ctx) error {
+// ShortenUrl create short url from long address
+func (h *Handlers) ShortenUrl(fc *fiber.Ctx) error {
 	sur := new(ShortUrlRequest)
 	if err := fc.BodyParser(sur); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
@@ -65,8 +64,7 @@ func (h *Handlers) Shorter(fc *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Errorf("invalid url: %s", err).Error())
 	}
 
-	ch := cache.NewCache(h.rdb)
-	get, err := ch.Get(fc.Context(), sur.LongUrl)
+	get, err := h.cache.Get(fc.Context(), sur.LongUrl)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	} else if get != "" {
@@ -87,22 +85,21 @@ func (h *Handlers) Shorter(fc *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	if err := ch.Set(fc.Context(), sur.LongUrl, string(bs62), cacheTtl); err != nil {
+	if err := h.cache.Set(fc.Context(), sur.LongUrl, string(bs62), cacheTtl); err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	return fc.JSON(ShortUrlResponse{ShortUrl: string(bs62)})
 }
 
-// Longer return long url from short address
-func (h *Handlers) Longer(fc *fiber.Ctx) error {
-	sur := new(LongUrlRequest)
+// ExpandUrl return long url from short address
+func (h *Handlers) ExpandUrl(fc *fiber.Ctx) error {
+	sur := new(ExpandUrlRequest)
 	if err := fc.BodyParser(sur); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	ch := cache.NewCache(h.rdb)
-	get, err := ch.Get(fc.Context(), sur.ShortUrl)
+	get, err := h.cache.Get(fc.Context(), sur.Hash)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	} else if get != "" {
@@ -112,18 +109,18 @@ func (h *Handlers) Longer(fc *fiber.Ctx) error {
 	longUrl := new(string)
 	err = h.pgp.QueryRow(fc.Context(),
 		"select long_url from public.url where short_url ilike $1",
-		sur.ShortUrl).Scan(longUrl)
+		sur.Hash).Scan(longUrl)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	} else if *longUrl == "" {
 		return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("unknown short url: %s", sur))
 	}
 
-	if err := ch.Set(fc.Context(), sur.ShortUrl, *longUrl, cacheTtl); err != nil {
+	if err := h.cache.Set(fc.Context(), sur.Hash, *longUrl, cacheTtl); err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
-	if err := fc.JSON(LongUrlResponse{LongUrl: *longUrl}); err != nil {
+	if err := fc.JSON(ExpandUrlResponse{LongUrl: *longUrl}); err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
