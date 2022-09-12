@@ -37,8 +37,8 @@ func New(ctx context.Context, address, port string, pgdb *pgxpool.Pool, rdb *red
 	app.Post(shortenUrlPath, handle.ShortenUrl)
 	app.Get(expandUrlPath, handle.ExpandUrl)
 	app.Get(liveUrlPath, handle.HealthCheck)
-	app.Get("/swagger/*", swagger.New(swagger.Config{ // custom
-		URL:         address + ":" + port + "/swagger/doc.json",
+	app.Get("/swagger/*", swagger.New(swagger.Config{
+		URL:         address + "/swagger/doc.json",
 		DeepLinking: false,
 	}))
 
