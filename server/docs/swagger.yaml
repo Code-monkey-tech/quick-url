@@ -1,0 +1,95 @@
+basePath: /
+definitions:
+  handlers.Error:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    required:
+    - code
+    - message
+    type: object
+  handlers.ShortUrlRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  handlers.ShortUrlResponse:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
+info:
+  contact:
+    name: Shrty
+    url: https://github.com/code-monkey-tech/shrty
+  description: API Server for Tomato-timer
+  title: Tomato-timer backend
+  version: "1.1"
+paths:
+  /expand:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - in: query
+        name: hash
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ShortUrlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.Error'
+      summary: create short url from long address
+  /shorten:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: url to make shorter
+        in: body
+        name: ShortUrlRequest
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.ShortUrlRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ShortUrlResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.Error'
+      summary: create short url from long address
+swagger: "2.0"

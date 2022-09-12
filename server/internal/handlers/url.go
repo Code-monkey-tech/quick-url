@@ -7,6 +7,7 @@ import (
 	"github.com/jxskiss/base62"
 	"net/url"
 	"shrty/cache"
+	_ "shrty/docs"
 	"shrty/internal/storage/pg/query"
 	"strconv"
 	"time"
@@ -52,7 +53,20 @@ func (h *Handlers) HealthCheck(fc *fiber.Ctx) error {
 	}{Status: "live"})
 }
 
-// ShortenUrl create short url from long address
+type Error struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+// ShortenUrl godoc
+// @Summary create short url from long address
+// @Param ShortUrlRequest body ShortUrlRequest true "url to make shorter"
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} ShortUrlResponse
+// @Failure 400,404 {object} Error
+// @Failure 500 {object} Error
+// @Router /shorten [post]
 func (h *Handlers) ShortenUrl(fc *fiber.Ctx) error {
 	sur := new(ShortUrlRequest)
 	if err := fc.BodyParser(sur); err != nil {
@@ -91,10 +105,18 @@ func (h *Handlers) ShortenUrl(fc *fiber.Ctx) error {
 	return fc.JSON(ShortUrlResponse{ShortUrl: string(bs62)})
 }
 
-// ExpandUrl return long url from short address
+// ExpandUrl godoc
+// @Summary create short url from long address
+// @Param ExpandUrlRequest query ExpandUrlRequest true "return long url from short address"
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} ShortUrlResponse
+// @Failure 400,404 {object} Error
+// @Failure 500 {object} Error
+// @Router /expand [get]
 func (h *Handlers) ExpandUrl(fc *fiber.Ctx) error {
 	sur := new(ExpandUrlRequest)
-	if err := fc.BodyParser(sur); err != nil {
+	if err := fc.QueryParser(sur); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 

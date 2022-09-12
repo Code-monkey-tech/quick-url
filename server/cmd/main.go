@@ -11,6 +11,12 @@ import (
 	"shrty/internal/storage/redis"
 )
 
+// @title Tomato-timer backend
+// @version 1.1
+// @description API Server for Tomato-timer
+// @contact.name Shrty
+// @contact.url https://github.com/code-monkey-tech/shrty
+// @BasePath /
 func main() {
 	ctx := context.Background()
 	log := zerolog.New(os.Stdout).With().
