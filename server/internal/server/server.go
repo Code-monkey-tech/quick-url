@@ -20,7 +20,7 @@ const (
 	liveUrlPath    = "/live"
 )
 
-func New(ctx context.Context, port string, pgdb *pgxpool.Pool, rdb *redis.Client) error {
+func New(ctx context.Context, address, port string, pgdb *pgxpool.Pool, rdb *redis.Client) error {
 	config := fiber.Config{
 		Prefork:      false,
 		ServerHeader: "shrty-server",
@@ -29,6 +29,7 @@ func New(ctx context.Context, port string, pgdb *pgxpool.Pool, rdb *redis.Client
 	handle := handlers.NewHandlers(ctx, query.NewQuery(pgdb), cache.NewCache(rdb))
 	app := fiber.New(config)
 	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
 		AllowMethods: "POST, GET, OPTIONS",
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
@@ -37,7 +38,7 @@ func New(ctx context.Context, port string, pgdb *pgxpool.Pool, rdb *redis.Client
 	app.Get(expandUrlPath, handle.ExpandUrl)
 	app.Get(liveUrlPath, handle.HealthCheck)
 	app.Get("/swagger/*", swagger.New(swagger.Config{ // custom
-		URL:         "http://localhost:" + port + "/swagger/doc.json",
+		URL:         address + ":" + port + "/swagger/doc.json",
 		DeepLinking: false,
 	}))
 
