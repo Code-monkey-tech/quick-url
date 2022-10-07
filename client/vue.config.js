@@ -1,5 +1,20 @@
 const { defineConfig } = require("@vue/cli-service");
 module.exports = defineConfig({
+  devServer: {
+    proxy: {
+      "/shorten": {
+        target: "https://e7ast1c-shrty.herokuapp.com",
+        secure: false,
+        changeOrigin: true,
+      },
+      "/expand": {
+        target: "https://e7ast1c-shrty.herokuapp.com",
+        secure: false,
+        changeOrigin: true,
+      },
+    },
+    // },
+  },
   transpileDependencies: true,
   chainWebpack: (config) => {
     const svgRule = config.module.rule("svg");

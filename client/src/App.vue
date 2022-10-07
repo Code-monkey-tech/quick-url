@@ -30,36 +30,41 @@
         class="input content__long"
         type="text"
         placeholder="Your link"
+        @keyup.enter="longUrl.length && sendLongUrl()"
       />
 
       <input
+        v-model="$store.getters.getCorrectShortUrl"
         class="input content__short"
         type="text"
+        placeholder="https://shorty.com/sGn2"
         disabled
-        value="www.short.com"
       />
       <button
         :class="{
-          'btn-disabled': !shortUrl.length,
-          'btn-active': shortUrl.length,
+          'btn-disabled': !$store.getters.getCorrectShortUrl.length,
+          'btn-active': $store.getters.getCorrectShortUrl.length,
         }"
         class="btn content__copy"
+        @click="
+          $store.getters.getCorrectShortUrl &&
+            copyURL($store.getters.getCorrectShortUrl)
+        "
       >
         Copy URL
       </button>
       <div class="content__qr qr">
-        <img
+        <qrcode-generate
           :class="{
-            'qr__img-disabled': !shortUrl.length,
+            'qr__img-disabled': !$store.getters.getCorrectShortUrl.length,
           }"
           class="qr__img"
-          src="./assets/qr_mock.png"
-          alt="qr"
         />
+
         <button
           :class="{
-            'btn-disabled': !shortUrl.length,
-            'btn-active': shortUrl.length,
+            'btn-disabled': !$store.getters.getCorrectShortUrl.length,
+            'btn-active': $store.getters.getCorrectShortUrl.length,
           }"
           class="btn qr__btn"
         >
@@ -73,6 +78,7 @@
           'btn-active': longUrl.length,
         }"
         class="btn content__btn"
+        @click="longUrl.length && sendLongUrl()"
       >
         Shorten URL
       </button>
@@ -80,27 +86,63 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
+import { requestExpandUrl } from "./api";
 import ShortyLogoSVG from "./assets/ShortyLogo.vue";
+import { useToast } from "vue-toastification";
+import QrcodeGenerate from "./components/QrcodeGenerate.vue";
+import { IUrlData } from "./components/types";
 
 export default defineComponent({
   name: "App",
   components: {
     ShortyLogoSVG,
+    QrcodeGenerate,
+  },
+  setup() {
+    const toast = useToast();
+    return { toast };
   },
   data() {
     return {
       longUrl: "",
-      shortUrl: "",
       colorScheme: "light",
     };
   },
-  mounted() {
+  computed: {
+    hashParam() {
+      const path = window.location.pathname.slice(1);
+      return path;
+    },
+  },
+  async created() {
+    if (this.hashParam) {
+      const { url } = await requestExpandUrl(this.hashParam);
+      url && (window.location.href = url);
+    }
+  },
+  async mounted() {
     const initialScheme = this.getSettings() || this.getMediaPrefers();
     this.setSettings(initialScheme);
   },
   methods: {
+    async copyURL(mytext: string) {
+      try {
+        await navigator.clipboard.writeText(mytext);
+        this.toast.success("You copied link! Use it");
+      } catch ($e) {
+        this.toast.error("So sorry, cannot copy!");
+      }
+    },
+    async sendLongUrl() {
+      const requestData: IUrlData = {
+        url: this.longUrl,
+      };
+      await this.$store.dispatch("getShortUrl", requestData, {
+        root: true,
+      });
+    },
     toggleScheme() {
       const localSettings = localStorage.getItem("user-scheme");
       if (localSettings === "light") {
@@ -112,7 +154,7 @@ export default defineComponent({
     getSettings() {
       return localStorage.getItem("user-scheme");
     },
-    setSettings(scheme) {
+    setSettings(scheme: string) {
       localStorage.setItem("user-scheme", scheme);
       this.colorScheme = scheme;
       document.documentElement.className = scheme;

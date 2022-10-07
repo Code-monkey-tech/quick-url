@@ -275,8 +275,9 @@ html, body {
 }
 
 .qr__img {
-    width: 168px;
-    height: 168px;
+    width: 16.8em;
+    height: 16.8em;
+    padding: 1.4em;
     border: 0.1em solid var(--btn-secondary);
     border-radius: 2em;
 }
@@ -291,6 +292,7 @@ html, body {
     cursor: pointer;
     background-color: var(--btn-secondary);
     color: var(--btn-text-color);
+    place-self: center;
 }
 
 .content__cut {
