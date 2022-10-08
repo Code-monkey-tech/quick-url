@@ -10,7 +10,9 @@ on:
 
 jobs:
   build:
-
+    defaults:
+      run:
+        working-directory: ./client
     runs-on: ubuntu-latest
 
     strategy:
@@ -20,7 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
-        working-directory: ./client
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
