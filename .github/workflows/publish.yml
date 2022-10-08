@@ -20,10 +20,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
+        working-directory: ./client
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: cd ./client
       - run: npm install -g surge
       - run: npm install -g @vue/cli
       - run: npm install
