@@ -1,20 +1,16 @@
-name: CI
-
+name: Delpoy frontend to surge
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
-  build:
+  deploy:
+    runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./client
-    runs-on: ubuntu-latest
-
+        shell: bash
+        working-directory: client
     steps:
       - uses: actions/checkout@v3
       - name: Setup node.js environment
@@ -22,6 +18,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org
+          check-latest: true
       - name: Install dependencies
         run: git init && npm install --force
       - name: Build for production
@@ -33,5 +30,3 @@ jobs:
       - name: Deploy to surge
         run: surge ./dist ${{secrets.SURGE_DOMAIN}} --token ${{secrets.SURGE_TOKEN}}
       - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
