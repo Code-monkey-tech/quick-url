@@ -48,8 +48,6 @@ jobs:
         uses: actions/configure-pages@v2
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
-      - name: DEBUG
-        run: ls -la
         with:
           # Upload entire repository
           path: /dist
