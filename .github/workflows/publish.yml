@@ -32,6 +32,8 @@ jobs:
         run: npm run build
       - name: Install surge
         run: npm install -g surge
+      - name: Debug
+        run: ls -la
       - name: Deploy to surge
         run: surge ./dist https://shrty.surge.sh --token ${{secrets.SURGE_TOKEN}}
       - uses: actions/checkout@v2
