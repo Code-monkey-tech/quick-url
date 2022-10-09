@@ -25,8 +25,9 @@ jobs:
         run: npm run build
       - name: Install surge
         run: npm install -g surge
-      - name: Debug
-        run: ls -la
-      - name: Deploy to surge
-        run: surge ./dist ${{secrets.SURGE_DOMAIN}} --token ${{secrets.SURGE_TOKEN}}
       - uses: actions/checkout@v2
+      - name: deploy to surge
+        run: npx surge --project ./dist --domain ${{secrets.SURGE_DOMAIN}}
+        env:
+          SURGE_LOGIN: ${{secrets.SURGE_LOGIN}}
+          SURGE_TOKEN: ${{secrets.SURGE_TOKEN}}
