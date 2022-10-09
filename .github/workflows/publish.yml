@@ -31,7 +31,7 @@ jobs:
       - name: Debug
         run: ls -la
       - name: Deploy to surge
-        run: surge ./dist https://shrty.surge.sh --token ${{secrets.SURGE_TOKEN}}
+        run: surge ./dist ${{secrets.SURGE_DOMAIN}} --token ${{secrets.SURGE_TOKEN}}
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
